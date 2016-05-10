@@ -5,7 +5,8 @@
 # This script will install and configure WordPress on
 # an Ubuntu 14.04 droplet
 export DEBIAN_FRONTEND=noninteractive;
-
+# Get around PAM audit during MySQL install
+ln -s -f /bin/true /usr/bin/chfn && \
 fallocate -l 1G /swapfile && \
 chmod 600 /swapfile && \
 mkswap /swapfile && \
@@ -14,12 +15,17 @@ echo "/swapfile   none    swap    sw    0   0" >> /etc/fstab && \
 echo "Setup 1GB swapfile" && \
 rootmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev` && \
 wpmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev` && \
+echo "mysql-server-5.6 mysql-server/root_password $rootmysqlpass" | debconf-set-selections && \
+echo "mysql-server-5.6 mysql-server/root_password_again password $rootmysqlpass" | debconf-set-selections && \
 echo "Root MySQL Password: $rootmysqlpass" > /root/passwords.txt && \
 echo "Wordpress MySQL Password: $wpmysqlpass" >> /root/passwords.txt && \
-echo "Setup random passwords and plaed them in /root/passwords.txt" && \
+echo "Setup random passwords and placed them in /root/passwords.txt" && \
 apt-get update && \
-apt-get -y full-upgrade && \
-apt-get -y install apache2 php5 php5-mysql mysql-server mysql-client unzip && \
+apt-get -y dist-upgrade && \
+echo "full-upgrade complete" && \
+apt-get -y install mysql-server-5.6 && \
+apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip && \
+unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
 wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip && \
 cd /tmp/ && \
@@ -36,7 +42,7 @@ for i in `seq 1 8`
   do
     wp_salt=$(</dev/urandom tr -dc 'a-zA-Z0-9!@#$%^&*()\-_ []{}<>~`+=,.;:/?|' | head -c 64 | sed -e 's/[\/&]/\\&/g') && \
     sed -i "0,/put your unique phrase here/s/put your unique phrase here/$wp_salt/" /tmp/wordpress/wp-config.php;
-done  && \
+done && \
 cp -Rf /tmp/wordpress/* /var/www/html/.  && \
 rm -f /var/www/html/index.html && \
 chown -Rf www-data:www-data /var/www/html  && \
