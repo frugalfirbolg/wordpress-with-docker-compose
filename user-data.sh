@@ -4,10 +4,43 @@
 #
 # This script will install and configure WordPress on
 # an Ubuntu 14.04 droplet
+#
+# No warranty implied or given.
 export DEBIAN_FRONTEND=noninteractive;
 
 generate_password () {
   echo `dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev |  tr -dc 'a-zA-Z0-9,._+:@%/-' | head -c 64`;
+}
+
+setup_vsftp () {
+  #INSECURE, Still under development, maybe use SFTP with SSH key used in Droplet creation
+  echo 'listen=YES' >> /etc/vsftpd.conf;
+  echo 'anonymous_enable=NO' >> /etc/vsftpd.conf;
+  echo 'local_enable=YES' >> /etc/vsftpd.conf;
+  echo 'write_enable=YES' >> /etc/vsftpd.conf;
+  echo 'local_umask=022' >> /etc/vsftpd.conf;
+  echo 'local_root=/var/www' >> /etc/vsftpd.conf;
+  echo 'chroot_local_user=YES' >> /etc/vsftpd.conf;
+  echo 'allow_writeable_chroot=YES' >> /etc/vsftpd.conf;
+  echo 'hide_ids=YES' >> /etc/vsftpd.conf;
+  echo '' >> /etc/vsftpd.conf;
+  echo '#virutal user settings' >> /etc/vsftpd.conf;
+  echo 'user_config_dir=/etc/vsftpd_user_conf' >> /etc/vsftpd.conf;
+  echo 'guest_enable=NO' >> /etc/vsftpd.conf;
+  echo 'virtual_use_local_privs=YES' >> /etc/vsftpd.conf;
+  echo 'pam_service_name=vsftpd' >> /etc/vsftpd.conf;
+  echo 'nopriv_user=vsftpd' >> /etc/vsftpd.conf;
+
+  setup_vsftp_conf && \
+  mkdir /etc/vsftpd && \
+  htpasswd -cd /etc/vsftpd/ftpd.passwd ftpuser && \
+  htpasswd -c -p -b /etc/vsftpd/ftpd.passwd ftpuser $(openssl passwd -1 -noverify password) && \
+  echo 'auth required pam_pwdfile.so pwdfile /etc/vsftpd/ftpd.passwd' > /etc/pam.d/vsftpd && \
+  echo 'account required pam_permit.so' >> /etc/pam.d/vsftpd && \
+  useradd --home /home/vsftpd --gid nogroup -m --shell /bin/false vsftpd && \
+  mkdir /etc/vsftpd_user_conf && \
+  echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/user1 && \
+  service vsftpd restart;
 }
 
 # Get around PAM audit during MySQL install
@@ -30,6 +63,7 @@ apt-get -y dist-upgrade && \
 echo "full-upgrade complete" && \
 apt-get -y install mysql-server-5.6 && \
 apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip && \
+apt-get install vsftpd libpam-pwdfile && \
 unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
 wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip && \

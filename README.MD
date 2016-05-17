@@ -16,3 +16,5 @@ Logs are located in:
 ```shell
 /var/log/cloud-init-output.log
 ```
+
+This snippet is provided without warranty or guarantee.
