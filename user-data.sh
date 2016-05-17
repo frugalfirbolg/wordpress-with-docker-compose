@@ -8,38 +8,38 @@
 # No warranty implied or given.
 export DEBIAN_FRONTEND=noninteractive;
 
-generate_password () {
+generate_ftppass () {
   echo `dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev |  tr -dc 'a-zA-Z0-9,._+:@%/-' | head -c 64`;
 }
 
 setup_vsftp () {
-  if [ -z "$ftpuser" ] || [ -z "$password" ]; then
+  if [ -z "$ftpuser" ] || [ -z "$ftppass" ]; then
     ftpuser="ftpuser";
-    password="Secret1!";
+    ftppass="Secret1!";
+    echo "WARNING: you should really change the password for $ftpuser"
   fi
-  echo 'listen=YES' >> /etc/vsftpd.conf;
-  echo 'anonymous_enable=NO' >> /etc/vsftpd.conf;
-  echo 'local_enable=YES' >> /etc/vsftpd.conf;
-  echo 'write_enable=YES' >> /etc/vsftpd.conf;
-  echo 'local_umask=022' >> /etc/vsftpd.conf;
-  echo 'local_root=/var/www' >> /etc/vsftpd.conf;
-  echo 'chroot_local_user=YES' >> /etc/vsftpd.conf;
-  echo 'allow_writeable_chroot=YES' >> /etc/vsftpd.conf;
-  echo 'hide_ids=YES' >> /etc/vsftpd.conf;
-  echo '' >> /etc/vsftpd.conf;
-  echo '#virutal user settings' >> /etc/vsftpd.conf;
-  echo 'user_config_dir=/etc/vsftpd_user_conf' >> /etc/vsftpd.conf;
-  echo 'guest_enable=YES' >> /etc/vsftpd.conf;
-  echo 'virtual_use_local_privs=YES' >> /etc/vsftpd.conf;
-  echo 'pam_service_name=vsftpd' >> /etc/vsftpd.conf;
-  echo 'nopriv_user=vsftpd' >> /etc/vsftpd.conf;
-
+  echo 'listen=YES' >> /etc/vsftpd.conf && \
+  echo 'anonymous_enable=NO' >> /etc/vsftpd.conf && \
+  echo 'local_enable=YES' >> /etc/vsftpd.conf && \
+  echo 'write_enable=YES' >> /etc/vsftpd.conf && \
+  echo 'local_umask=022' >> /etc/vsftpd.conf && \
+  echo 'local_root=/var/www' >> /etc/vsftpd.conf && \
+  echo 'chroot_local_user=YES' >> /etc/vsftpd.conf && \
+  echo 'allow_writeable_chroot=YES' >> /etc/vsftpd.conf && \
+  echo 'hide_ids=YES' >> /etc/vsftpd.conf && \
+  echo '' >> /etc/vsftpd.conf && \
+  echo '#virutal user settings' >> /etc/vsftpd.conf && \
+  echo 'user_config_dir=/etc/vsftpd_user_conf' >> /etc/vsftpd.conf && \
+  echo 'guest_enable=YES' >> /etc/vsftpd.conf && \
+  echo 'virtual_use_local_privs=YES' >> /etc/vsftpd.conf && \
+  echo 'pam_service_name=vsftpd' >> /etc/vsftpd.conf && \
+  echo 'nopriv_user=vsftpd' >> /etc/vsftpd.conf && \
   mkdir /etc/vsftpd && \
-  echo $ftpuser > /etc/vsftpd/vusers && \
-  echo $password >> /etc/vsftpd/vusers && \
-  db_load -T -t hash -f vusers vsftpd-virtual-user.db && \
+  echo $ftpuser > /etc/vsftpd/vusers.txt && \
+  echo $ftppass >> /etc/vsftpd/vusers.txt && \
+  db_load -T -t hash -f /etc/vsftpd/vusers.txt vsftpd-virtual-user.db && \
   chmod 600 vsftpd-virtual-user.db && \
-  rm vusrs && \
+  rm /etc/vsftpd/vusers.txt && \
   echo '#%PAM-1.0' >> /etc/pam.d/vsftpd && \
   echo 'auth       required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
   echo 'account    required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
@@ -70,7 +70,7 @@ apt-get -y dist-upgrade && \
 echo "full-upgrade complete" && \
 apt-get -y install mysql-server-5.6 && \
 apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip curl libcurl3 libcurl3-dev php5-curl && \
-apt-get install vsftpd db-util && \
+apt-get -y install vsftpd db-util && \
 unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
 wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip && \
@@ -94,5 +94,5 @@ rm -f /var/www/html/index.html && \
 chown -Rf www-data:www-data /var/www/html  && \
 echo "Done setting up initial Wordpress files and DB" && \
 a2enmod rewrite && \
-service apache2 restart;
-setup_vsftp #needs a better cypher than openssl passwd which uses MD5, bleh
+service apache2 restart && \
+setup_vsftp;
