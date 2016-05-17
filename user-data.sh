@@ -33,8 +33,8 @@ setup_vsftp () {
 
   setup_vsftp_conf && \
   mkdir /etc/vsftpd && \
-  htpasswd -cd /etc/vsftpd/ftpd.passwd ftpuser && \
-  htpasswd -c -p -b /etc/vsftpd/ftpd.passwd ftpuser $(openssl passwd -1 -noverify password) && \
+  htpasswd -cd /etc/vsftpd/ftpd.passwd $ftpuser && \
+  htpasswd -c -p -b /etc/vsftpd/ftpd.passwd $ftpuser $(openssl passwd -1 -noverify $password) && \
   echo 'auth required pam_pwdfile.so pwdfile /etc/vsftpd/ftpd.passwd' > /etc/pam.d/vsftpd && \
   echo 'account required pam_permit.so' >> /etc/pam.d/vsftpd && \
   useradd --home /home/vsftpd --gid nogroup -m --shell /bin/false vsftpd && \
@@ -62,7 +62,7 @@ apt-get update && \
 apt-get -y dist-upgrade && \
 echo "full-upgrade complete" && \
 apt-get -y install mysql-server-5.6 && \
-apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip && \
+apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip curl libcurl3 libcurl3-dev php5-curl && \
 apt-get install vsftpd libpam-pwdfile && \
 unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
@@ -88,3 +88,4 @@ chown -Rf www-data:www-data /var/www/html  && \
 echo "Done setting up initial Wordpress files and DB" && \
 a2enmod rewrite && \
 service apache2 restart;
+#setup_vsftp #needs a better cypher than openssl passwd which uses MD5, bleh
