@@ -31,7 +31,6 @@ setup_vsftp () {
   echo 'pam_service_name=vsftpd' >> /etc/vsftpd.conf;
   echo 'nopriv_user=vsftpd' >> /etc/vsftpd.conf;
 
-  setup_vsftp_conf && \
   mkdir /etc/vsftpd && \
   htpasswd -cd /etc/vsftpd/ftpd.passwd $ftpuser && \
   htpasswd -c -p -b /etc/vsftpd/ftpd.passwd $ftpuser $(openssl passwd -1 -noverify $password) && \
@@ -39,7 +38,7 @@ setup_vsftp () {
   echo 'account required pam_permit.so' >> /etc/pam.d/vsftpd && \
   useradd --home /home/vsftpd --gid nogroup -m --shell /bin/false vsftpd && \
   mkdir /etc/vsftpd_user_conf && \
-  echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/user1 && \
+  echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/$ftpuser && \
   service vsftpd restart;
 }
 
@@ -51,8 +50,8 @@ mkswap /swapfile && \
 swapon /swapfile && \
 echo "/swapfile   none    swap    sw    0   0" >> /etc/fstab && \
 echo "Setup 1GB swapfile" && \
-rootmysqlpass=$(generate_password) && \
-wpmysqlpass=$(generate_password) && \
+rootmysqlpass=`generate_password` && \
+wpmysqlpass=`generate_password` && \
 echo "mysql-server-5.6 mysql-server/root_password $rootmysqlpass" | debconf-set-selections && \
 echo "mysql-server-5.6 mysql-server/root_password_again password $rootmysqlpass" | debconf-set-selections && \
 echo "Root MySQL Password: $rootmysqlpass" > /root/passwords.txt && \
@@ -63,7 +62,7 @@ apt-get -y dist-upgrade && \
 echo "full-upgrade complete" && \
 apt-get -y install mysql-server-5.6 && \
 apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip curl libcurl3 libcurl3-dev php5-curl && \
-apt-get install vsftpd libpam-pwdfile && \
+apt-get install vsftpd libpam-pwdfile apache2-utils && \
 unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
 wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip && \
@@ -88,4 +87,4 @@ chown -Rf www-data:www-data /var/www/html  && \
 echo "Done setting up initial Wordpress files and DB" && \
 a2enmod rewrite && \
 service apache2 restart;
-#setup_vsftp #needs a better cypher than openssl passwd which uses MD5, bleh
+setup_vsftp #needs a better cypher than openssl passwd which uses MD5, bleh
