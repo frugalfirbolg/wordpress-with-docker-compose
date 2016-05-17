@@ -95,4 +95,5 @@ chown -Rf www-data:www-data /var/www/html  && \
 echo "Done setting up initial Wordpress files and DB" && \
 a2enmod rewrite && \
 service apache2 restart && \
-setup_vsftp;
+setup_vsftp && \
+echo "Done setting up FTP";
