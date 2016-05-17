@@ -13,7 +13,7 @@ generate_password () {
 }
 
 setup_vsftp () {
-  if [ -z "$ftpuser" ] || [ -z "$ftppass" ]; then
+  if  [ -z "$ftpuser" -o -z "$ftppass" ]; then
     ftpuser="ftpuser";
     ftppass="Secret1!";
     echo "WARNING: you should really change the password for $ftpuser"
