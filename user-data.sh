@@ -47,7 +47,7 @@ setup_vsftp () {
   echo 'session    required     pam_loginuid.so' >> /etc/pam.d/vsftpd && \
   useradd --home /home/vsftpd --gid www-data -m --shell /bin/false vsftpd && \
   mkdir /etc/vsftpd_user_conf && \
-  echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/$ftpuser && \
+  echo 'local_root=/var/www/html/' > /etc/vsftpd_user_conf/$ftpuser && \
   service vsftpd restart;
 }
 
