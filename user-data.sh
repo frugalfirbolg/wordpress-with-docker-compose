@@ -5,6 +5,11 @@
 # This script will install and configure WordPress on
 # an Ubuntu 14.04 droplet
 export DEBIAN_FRONTEND=noninteractive;
+
+generate_password () {
+  echo `dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev |  tr -dc 'a-zA-Z0-9,._+:@%/-' | head -c 64`;
+}
+
 # Get around PAM audit during MySQL install
 ln -s -f /bin/true /usr/bin/chfn && \
 fallocate -l 1G /swapfile && \
@@ -13,8 +18,8 @@ mkswap /swapfile && \
 swapon /swapfile && \
 echo "/swapfile   none    swap    sw    0   0" >> /etc/fstab && \
 echo "Setup 1GB swapfile" && \
-rootmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev` && \
-wpmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev` && \
+rootmysqlpass=$(generate_password) && \
+wpmysqlpass=$(generate_password) && \
 echo "mysql-server-5.6 mysql-server/root_password $rootmysqlpass" | debconf-set-selections && \
 echo "mysql-server-5.6 mysql-server/root_password_again password $rootmysqlpass" | debconf-set-selections && \
 echo "Root MySQL Password: $rootmysqlpass" > /root/passwords.txt && \
@@ -35,12 +40,12 @@ unzip /tmp/wordpress.zip && \
 /usr/bin/mysql -u root -p$rootmysqlpass -e "CREATE USER wordpress@localhost IDENTIFIED BY '"$wpmysqlpass"'" && \
 /usr/bin/mysql -u root -p$rootmysqlpass -e "GRANT ALL PRIVILEGES ON wordpress.* TO wordpress@localhost" && \
 cp /tmp/wordpress/wp-config-sample.php /tmp/wordpress/wp-config.php && \
-sed -i "s/'DB_NAME', 'database_name_here'/'DB_NAME', 'wordpress'/g" /tmp/wordpress/wp-config.php && \
-sed -i "s/'DB_USER', 'username_here'/'DB_USER', 'wordpress'/g" /tmp/wordpress/wp-config.php && \
-sed -i "s/'DB_PASSWORD', 'password_here'/'DB_PASSWORD', '$wpmysqlpass'/g" /tmp/wordpress/wp-config.php && \
+sed -i "s~'DB_NAME', 'database_name_here'~'DB_NAME', 'wordpress'~g" /tmp/wordpress/wp-config.php && \
+sed -i "s~'DB_USER', 'username_here'~'DB_USER', 'wordpress'~g" /tmp/wordpress/wp-config.php && \
+sed -i "s~'DB_PASSWORD', 'password_here'~'DB_PASSWORD', '$wpmysqlpass'~g" /tmp/wordpress/wp-config.php && \
 for i in `seq 1 8`
   do
-    wp_salt=$(</dev/urandom tr -dc 'a-zA-Z0-9!@#$%^&*()\-_ []{}<>~`+=,.;:/?|' | head -c 64 | sed -e 's/[\/&]/\\&/g') && \
+    wp_salt=$(</dev/urandom 2>/dev/null tr -dc 'a-zA-Z0-9!@#$%^&*()\-_ []{}<>~`+=,.;:/?|' | head -c 64 | sed -e 's/[\/&]/\\&/g') && \
     sed -i "0,/put your unique phrase here/s/put your unique phrase here/$wp_salt/" /tmp/wordpress/wp-config.php;
 done && \
 cp -Rf /tmp/wordpress/* /var/www/html/.  && \
