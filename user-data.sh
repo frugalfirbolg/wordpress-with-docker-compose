@@ -13,7 +13,10 @@ generate_password () {
 }
 
 setup_vsftp () {
-  #INSECURE, Still under development, maybe use SFTP with SSH key used in Droplet creation
+  if [ -z "$ftpuser" ] || [ -z "$password" ]; then
+    ftpuser="ftpuser";
+    password="Secret1!";
+  fi
   echo 'listen=YES' >> /etc/vsftpd.conf;
   echo 'anonymous_enable=NO' >> /etc/vsftpd.conf;
   echo 'local_enable=YES' >> /etc/vsftpd.conf;
@@ -26,16 +29,21 @@ setup_vsftp () {
   echo '' >> /etc/vsftpd.conf;
   echo '#virutal user settings' >> /etc/vsftpd.conf;
   echo 'user_config_dir=/etc/vsftpd_user_conf' >> /etc/vsftpd.conf;
-  echo 'guest_enable=NO' >> /etc/vsftpd.conf;
+  echo 'guest_enable=YES' >> /etc/vsftpd.conf;
   echo 'virtual_use_local_privs=YES' >> /etc/vsftpd.conf;
   echo 'pam_service_name=vsftpd' >> /etc/vsftpd.conf;
   echo 'nopriv_user=vsftpd' >> /etc/vsftpd.conf;
 
   mkdir /etc/vsftpd && \
-  htpasswd -cd /etc/vsftpd/ftpd.passwd $ftpuser && \
-  htpasswd -c -p -b /etc/vsftpd/ftpd.passwd $ftpuser $(openssl passwd -1 -noverify $password) && \
-  echo 'auth required pam_pwdfile.so pwdfile /etc/vsftpd/ftpd.passwd' > /etc/pam.d/vsftpd && \
-  echo 'account required pam_permit.so' >> /etc/pam.d/vsftpd && \
+  echo $ftpuser > /etc/vsftpd/vusers && \
+  echo $password >> /etc/vsftpd/vusers && \
+  db_load -T -t hash -f vusers vsftpd-virtual-user.db && \
+  chmod 600 vsftpd-virtual-user.db && \
+  rm vusrs && \
+  echo '#%PAM-1.0' >> /etc/pam.d/vsftpd && \
+  echo 'auth       required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
+  echo 'account    required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
+  echo 'session    required     pam_loginuid.so' >> /etc/pam.d/vsftpd && \
   useradd --home /home/vsftpd --gid nogroup -m --shell /bin/false vsftpd && \
   mkdir /etc/vsftpd_user_conf && \
   echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/$ftpuser && \
@@ -62,7 +70,7 @@ apt-get -y dist-upgrade && \
 echo "full-upgrade complete" && \
 apt-get -y install mysql-server-5.6 && \
 apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip curl libcurl3 libcurl3-dev php5-curl && \
-apt-get install vsftpd libpam-pwdfile apache2-utils && \
+apt-get install vsftpd db-util && \
 unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
 wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip && \
