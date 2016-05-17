@@ -8,7 +8,7 @@
 # No warranty implied or given.
 export DEBIAN_FRONTEND=noninteractive;
 
-generate_ftppass () {
+generate_password () {
   echo `dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev |  tr -dc 'a-zA-Z0-9,._+:@%/-' | head -c 64`;
 }
 
