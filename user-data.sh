@@ -37,8 +37,8 @@ setup_vsftp () {
   mkdir /etc/vsftpd && \
   echo $ftpuser > /etc/vsftpd/vusers.txt && \
   echo $ftppass >> /etc/vsftpd/vusers.txt && \
-  db_load -T -t hash -f /etc/vsftpd/vusers.txt vsftpd-virtual-user.db && \
-  chmod 600 vsftpd-virtual-user.db && \
+  db_load -T -t hash -f /etc/vsftpd/vusers.txt /etc/vsftpd/vsftpd-virtual-user.db && \
+  chmod 600 /etc/vsftpd/vsftpd-virtual-user.db && \
   rm /etc/vsftpd/vusers.txt && \
   echo '#%PAM-1.0' >> /etc/pam.d/vsftpd && \
   echo 'auth       required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
