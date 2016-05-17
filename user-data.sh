@@ -34,6 +34,7 @@ setup_vsftp () {
   echo 'virtual_use_local_privs=YES' >> /etc/vsftpd.conf && \
   echo 'pam_service_name=vsftpd' >> /etc/vsftpd.conf && \
   echo 'nopriv_user=vsftpd' >> /etc/vsftpd.conf && \
+  echo 'guest_username=vsftpd' >> /etc/vsftpd.conf && \
   mkdir /etc/vsftpd && \
   echo $ftpuser > /etc/vsftpd/vusers.txt && \
   echo $ftppass >> /etc/vsftpd/vusers.txt && \
@@ -44,8 +45,7 @@ setup_vsftp () {
   echo 'auth       required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
   echo 'account    required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
   echo 'session    required     pam_loginuid.so' >> /etc/pam.d/vsftpd && \
-  useradd --home /home/vsftpd --gid nogroup -m --shell /bin/false vsftpd && \
-  adduser vsftpd www-data && \
+  useradd --home /home/vsftpd --gid www-data -m --shell /bin/false vsftpd && \
   mkdir /etc/vsftpd_user_conf && \
   echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/$ftpuser && \
   service vsftpd restart;
@@ -92,7 +92,7 @@ for i in `seq 1 8`
 done && \
 cp -Rf /tmp/wordpress/* /var/www/html/.  && \
 rm -f /var/www/html/index.html && \
-chown -Rf www-data:www-data /var/www/html  && \
+chown -Rf www-data:www-data /var/www  && \
 echo "Done setting up initial Wordpress files and DB" && \
 a2enmod rewrite && \
 service apache2 restart && \
