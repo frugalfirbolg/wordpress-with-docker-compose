@@ -45,6 +45,7 @@ setup_vsftp () {
   echo 'account    required     pam_userdb.so db=/etc/vsftpd/vsftpd-virtual-user' >> /etc/pam.d/vsftpd && \
   echo 'session    required     pam_loginuid.so' >> /etc/pam.d/vsftpd && \
   useradd --home /home/vsftpd --gid nogroup -m --shell /bin/false vsftpd && \
+  adduser vsftpd www-data && \
   mkdir /etc/vsftpd_user_conf && \
   echo 'local_root=/var/www/' > /etc/vsftpd_user_conf/$ftpuser && \
   service vsftpd restart;
