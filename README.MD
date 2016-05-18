@@ -5,9 +5,11 @@ _For now just a shell script to throw into the Create Droplet pipeline._
 Copy and paste the following into the User Data field in the Create Droplet form:
 ```shell
 #!/bin/sh
-ftpuser='ftpuser' #replace with user of your choosing
-ftppass='Secret1!' #obviously replace with a secret password, currently 8 characters or less
-wget -O - https://raw.githubusercontent.com/frugalfirbolg/wordpress-with-docker-compose/master/user-data.sh | sh
+export ftpuser='ftpuser' #replace with user of your choosing
+export ftppass='Secret1!' #obviously replace with a secret password
+wget -O - https://raw.githubusercontent.com/frugalfirbolg/wordpress-with-docker-compose/master/user-data.sh | sh && \
+unset ftpuser && \
+unset ftppass;
 ```
 
 Don't forget the __#!/bin/sh__ at the beginning or Digital Ocean will not execute the script!
