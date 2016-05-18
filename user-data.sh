@@ -93,6 +93,7 @@ done && \
 cp -Rf /tmp/wordpress/* /var/www/html/.  && \
 rm -f /var/www/html/index.html && \
 chown -Rf www-data:www-data /var/www  && \
+chmod -R g+w /var/www && \
 echo "Done setting up initial Wordpress files and DB" && \
 a2enmod rewrite && \
 service apache2 restart && \
