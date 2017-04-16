@@ -61,16 +61,16 @@ echo "/swapfile   none    swap    sw    0   0" >> /etc/fstab && \
 echo "Setup 1GB swapfile" && \
 rootmysqlpass=`generate_password` && \
 wpmysqlpass=`generate_password` && \
-echo "mysql-server-5.6 mysql-server/root_password $rootmysqlpass" | debconf-set-selections && \
-echo "mysql-server-5.6 mysql-server/root_password_again password $rootmysqlpass" | debconf-set-selections && \
+echo "mysql-server-5.7 mysql-server/root_password $rootmysqlpass" | debconf-set-selections && \
+echo "mysql-server-5.7 mysql-server/root_password_again password $rootmysqlpass" | debconf-set-selections && \
 echo "Root MySQL Password: $rootmysqlpass" > /root/passwords.txt && \
 echo "Wordpress MySQL Password: $wpmysqlpass" >> /root/passwords.txt && \
 echo "Setup random passwords and placed them in /root/passwords.txt" && \
 apt-get update && \
 apt-get -y dist-upgrade && \
 echo "full-upgrade complete" && \
-apt-get -y install mysql-server-5.6 && \
-apt-get -y install mysql-client-5.6 apache2 php5 php5-mysql unzip curl libcurl3 libcurl3-dev php5-curl && \
+apt-get -y install mysql-server-5.7 && \
+apt-get -y install mysql-client-5.7 apache2 php5 php5-mysql unzip curl libcurl3 libcurl3-dev php5-curl && \
 apt-get -y install vsftpd db-util && \
 unlink /usr/bin/chfn && \
 echo "Done with installing Ubuntu packages" && \
